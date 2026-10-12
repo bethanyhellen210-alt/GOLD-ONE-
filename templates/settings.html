@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broker Login & Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0d0f17; color: #e1e1e6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background-color: #161926; border: 1px solid #282c3f; border-radius: 8px; }
+        .accent-gold { color: #d4af37; }
+        .btn-gold { background-color: #d4af37; color: #000; font-weight: bold; border: none; }
+        .btn-gold:hover { background-color: #c5a028; color: #000; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container" style="max-width: 780px;">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+            <h2 class="m-0"><span class="accent-gold">Broker & Bot Configuration</span></h2>
+            <a href="/" class="btn btn-outline-light">Back to Dashboard</a>
+        </div>
+
+        <form id="settingsForm" class="card p-4">
+            <h5 class="accent-gold mb-3">1. MetaAPI & MetaTrader Broker Connection</h5>
+            <div class="mb-3">
+                <label class="form-label">MetaAPI Token</label>
+                <input type="password" id="META_API_TOKEN" class="form-control bg-dark text-white border-secondary" value="{{ config.META_API_TOKEN }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">MetaTrader Account ID (Provisioned on MetaAPI)</label>
+                <input type="text" id="ACCOUNT_ID" class="form-control bg-dark text-white border-secondary" value="{{ config.ACCOUNT_ID }}">
+            </div>
+
+            <h5 class="accent-gold mb-3 mt-4">2. Telegram Dispatch Setup</h5>
+            <div class="mb-3">
+                <label class="form-label">Telegram Bot Token</label>
+                <input type="password" id="TELEGRAM_BOT_TOKEN" class="form-control bg-dark text-white border-secondary" value="{{ config.TELEGRAM_BOT_TOKEN }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Telegram Chat / Channel ID</label>
+                <input type="text" id="TELEGRAM_CHAT_ID" class="form-control bg-dark text-white border-secondary" value="{{ config.TELEGRAM_CHAT_ID }}">
+            </div>
+
+            <h5 class="accent-gold mb-3 mt-4">3. Execution & Risk Parameters</h5>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="AUTO_TRADING_ENABLED" {% if config.AUTO_TRADING_ENABLED %}checked{% endif %}>
+                <label class="form-check-label fw-bold" for="AUTO_TRADING_ENABLED">Enable Automatic Trade Execution</label>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Min. Signal Confidence Threshold (%): <span id="confDisplay" class="accent-gold fw-bold">{{ config.CONFIDENCE_THRESHOLD }}%</span></label>
+                    <input type="range" id="CONFIDENCE_THRESHOLD" class="form-range" min="50" max="95" value="{{ config.CONFIDENCE_THRESHOLD }}" oninput="document.getElementById('confDisplay').innerText = this.value + '%'">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Default Lot Size</label>
+                    <input type="number" id="DEFAULT_LOT_SIZE" class="form-control bg-dark text-white border-secondary" value="{{ config.DEFAULT_LOT_SIZE or 0.01 }}" step="0.01">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Default Stop Loss ($ movement)</label>
+                    <input type="number" id="DEFAULT_STOP_LOSS_PIPS" class="form-control bg-dark text-white border-secondary" value="{{ config.DEFAULT_STOP_LOSS_PIPS or 3.0 }}" step="0.5">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Default Take Profit ($ movement)</label>
+                    <input type="number" id="DEFAULT_TAKE_PROFIT_PIPS" class="form-control bg-dark text-white border-secondary" value="{{ config.DEFAULT_TAKE_PROFIT_PIPS or 6.0 }}" step="0.5">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Timeframe</label>
+                    <select id="TIMEFRAME" class="form-select bg-dark text-white border-secondary">
+                        <option value="1m" {% if config.TIMEFRAME == '1m' %}selected{% endif %}>1 Minute</option>
+                        <option value="5m" {% if config.TIMEFRAME == '5m' %}selected{% endif %}>5 Minutes</option>
+                        <option value="15m" {% if config.TIMEFRAME == '15m' %}selected{% endif %}>15 Minutes</option>
+                        <option value="1h" {% if config.TIMEFRAME == '1h' %}selected{% endif %}>1 Hour</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Auto-Scan Interval (Minutes)</label>
+                    <input type="number" id="AUTO_RUN_INTERVAL_MINUTES" class="form-control bg-dark text-white border-secondary" value="{{ config.AUTO_RUN_INTERVAL_MINUTES or 15 }}">
+                </div>
+            </div>
+
+            <button type="button" onclick="saveConfiguration()" class="btn btn-gold w-100 mt-4 py-2 fs-5">Save Configuration</button>
+        </form>
+    </div>
+
+    <script>
+        async function saveConfiguration() {
+            const payload = {
+                META_API_TOKEN: document.getElementById('META_API_TOKEN').value,
+                ACCOUNT_ID: document.getElementById('ACCOUNT_ID').value,
+                TELEGRAM_BOT_TOKEN: document.getElementById('TELEGRAM_BOT_TOKEN').value,
+                TELEGRAM_CHAT_ID: document.getElementById('TELEGRAM_CHAT_ID').value,
+                TELEGRAM_ENABLED: true,
+                AUTO_TRADING_ENABLED: document.getElementById('AUTO_TRADING_ENABLED').checked,
+                CONFIDENCE_THRESHOLD: parseInt(document.getElementById('CONFIDENCE_THRESHOLD').value),
+                DEFAULT_LOT_SIZE: parseFloat(document.getElementById('DEFAULT_LOT_SIZE').value),
+                DEFAULT_STOP_LOSS_PIPS: parseFloat(document.getElementById('DEFAULT_STOP_LOSS_PIPS').value),
+                DEFAULT_TAKE_PROFIT_PIPS: parseFloat(document.getElementById('DEFAULT_TAKE_PROFIT_PIPS').value),
+                SYMBOL: "XAUUSD",
+                TIMEFRAME: document.getElementById('TIMEFRAME').value,
+                AUTO_RUN_INTERVAL_MINUTES: parseInt(document.getElementById('AUTO_RUN_INTERVAL_MINUTES').value)
+            };
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+                alert(res.message);
+            } catch (err) {
+                alert('Save failed: ' + err);
+            }
+        }
+    </script>
+</body>
+</html>
