@@ -1,0 +1,16 @@
+# Python environment & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Sensitive Configuration (API Keys & Broker Credentials)
+config.json
+
+# IDE / System files
+.vscode/
+.idea/
+.DS_Store
+*.log
