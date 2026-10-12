@@ -1,0 +1,6 @@
+flask==3.0.2
+metaapi-cloud-sdk==25.0.0
+pandas==2.2.1
+pandas-ta==0.3.14b0
+requests==2.31.0
+APScheduler==3.10.4
