@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAUUSD Live Trading Terminal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0d0f17; color: #e1e1e6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background-color: #161926; border: 1px solid #282c3f; border-radius: 8px; }
+        .accent-gold { color: #d4af37; }
+        .btn-gold { background-color: #d4af37; color: #000; font-weight: bold; border: none; }
+        .btn-gold:hover { background-color: #c5a028; color: #000; }
+        .table-dark { background-color: #161926; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container-fluid" style="max-width: 1300px;">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+            <h2 class="m-0"><span class="accent-gold">XAU/USD</span> Professional Terminal</h2>
+            <div>
+                <a href="/" class="btn btn-gold me-2">Dashboard</a>
+                <a href="/positions" class="btn btn-outline-light me-2">Open Trades</a>
+                <a href="/settings" class="btn btn-outline-warning">Broker & Bot Settings</a>
+            </div>
+        </div>
+
+        <!-- Realtime Market Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-8">
+                <div class="card p-3 d-flex flex-row justify-content-around text-center">
+                    <div>
+                        <small class="text-secondary fw-bold">ASSET</small>
+                        <h3 class="accent-gold m-0">XAU/USD</h3>
+                    </div>
+                    <div>
+                        <small class="text-secondary fw-bold">SPOT PRICE</small>
+                        <h3 id="livePrice" class="m-0">$0.00</h3>
+                    </div>
+                    <div>
+                        <small class="text-secondary fw-bold">SIGNAL</small>
+                        <h3 id="liveSignal" class="m-0">--</h3>
+                    </div>
+                    <div>
+                        <small class="text-secondary fw-bold">CONFIDENCE</small>
+                        <h3 id="liveConfidence" class="m-0">0%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button onclick="runAnalysis()" id="runBtn" class="btn btn-gold w-100 h-100 fs-5">Run Signal Analysis</button>
+            </div>
+        </div>
+
+        <!-- Technical Analysis Matrix & Manual Order Ticket -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-7">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card p-3">
+                            <span class="text-secondary fw-bold">EMA (20/50) Trend</span>
+                            <h4 id="emaStatus" class="mt-2 text-info">--</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3">
+                            <span class="text-secondary fw-bold">RSI (14) Value</span>
+                            <h4 id="rsiStatus" class="mt-2 text-info">--</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3">
+                            <span class="text-secondary fw-bold">MACD Signal</span>
+                            <h4 id="macdStatus" class="mt-2 text-info">--</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signal History Log -->
+                <div class="card p-3 mt-3">
+                    <h5 class="mb-3 accent-gold">Signal & Execution History</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Direction</th>
+                                    <th>Confidence</th>
+                                    <th>Price</th>
+                                    <th>Telegram</th>
+                                    <th>Auto-Traded</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <tr><td colspan="6" class="text-center text-muted">No signal logs recorded yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Trading Panel -->
+            <div class="col-md-5">
+                <div class="card p-4">
+                    <h5 class="accent-gold mb-3">One-Click Execution Ticket</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Volume (Lots)</label>
+                        <input type="number" id="tradeVolume" class="form-control bg-dark text-white border-secondary" value="0.01" step="0.01">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Stop Loss ($ Price)</label>
+                            <input type="number" id="tradeSL" class="form-control bg-dark text-white border-secondary" placeholder="Optional" step="0.10">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Take Profit ($ Price)</label>
+                            <input type="number" id="tradeTP" class="form-control bg-dark text-white border-secondary" placeholder="Optional" step="0.10">
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <button onclick="placeManualTrade('BUY')" class="btn btn-success w-100 py-3 fw-bold fs-5">BUY GOLD</button>
+                        </div>
+                        <div class="col-6">
+                            <button onclick="placeManualTrade('SELL')" class="btn btn-danger w-100 py-3 fw-bold fs-5">SELL GOLD</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runAnalysis() {
+            const btn = document.getElementById('runBtn');
+            btn.disabled = true;
+            btn.innerText = "Analyzing...";
+
+            try {
+                const response = await fetch('/api/analyze');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('livePrice').innerText = '$' + result.data.price;
+                    document.getElementById('liveSignal').innerText = result.data.direction;
+                    document.getElementById('liveConfidence').innerText = result.data.confidence + '%';
+                    document.getElementById('emaStatus').innerText = result.data.ema_trend;
+                    document.getElementById('rsiStatus').innerText = result.data.rsi;
+                    document.getElementById('macdStatus').innerText = result.data.macd_status;
+                    await fetchLogs();
+                } else {
+                    alert('Analysis Error: ' + result.message);
+                }
+            } catch (err) {
+                alert('Request failed: ' + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Run Signal Analysis";
+            }
+        }
+
+        async function fetchLogs() {
+            const response = await fetch('/api/logs');
+            const logs = await response.json();
+            const tbody = document.getElementById('logsTableBody');
+            
+            if (logs.length === 0) return;
+
+            tbody.innerHTML = '';
+            logs.forEach(log => {
+                const tgBadge = log.sent_telegram ? '<span class="badge bg-success">SENT</span>' : '<span class="badge bg-secondary">SKIPPED</span>';
+                const tradeBadge = log.auto_traded ? '<span class="badge bg-primary">EXECUTED</span>' : '<span class="badge bg-dark">NONE</span>';
+                const dirColor = log.direction === 'BUY' ? 'text-success' : 'text-danger';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${log.time}</td>
+                        <td class="${dirColor} fw-bold">${log.direction}</td>
+                        <td>${log.confidence}%</td>
+                        <td>$${log.price}</td>
+                        <td>${tgBadge}</td>
+                        <td>${tradeBadge}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function placeManualTrade(action) {
+            const volume = document.getElementById('tradeVolume').value;
+            const stopLoss = document.getElementById('tradeSL').value;
+            const takeProfit = document.getElementById('tradeTP').value;
+
+            if(!confirm(`Are you sure you want to open a ${action} trade of ${volume} lots on XAUUSD?`)) return;
+
+            try {
+                const response = await fetch('/api/trade/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: "XAUUSD",
+                        action: action,
+                        volume: volume,
+                        stopLoss: stopLoss || null,
+                        takeProfit: takeProfit || null
+                    })
+                });
+                const res = await response.json();
+                if(res.status === 'success') {
+                    alert(`Trade Successfully Executed! Position ID: ${res.result.id}`);
+                } else {
+                    alert(`Trade Execution Failed: ${res.message}`);
+                }
+            } catch(e) {
+                alert(`Error executing trade: ${e}`);
+            }
+        }
+
+        setInterval(fetchLogs, 10000);
+    </script>
+</body>
+</html>
